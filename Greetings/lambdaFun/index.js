@@ -12,7 +12,7 @@ exports.handler = function(event, context) {
 
         // here you are building the options object to pass into buildResponse in line 32
 
-        var options = {}; // we pass these options into line 32
+        let options = {}; // we pass these options into line 32
         options.speechText = "Welcome to Greetings skill. Go ahead and greet your guests.", // we need this in line 44
         // amazon asks you to explain here to the user what they need to do - usually ask them a question or prompt them to do something, otherwise they will need to be reprompted to interact with the skill
         options.repromptText = "Who do you want to say hello to?" // needed in line 52 - not essential
@@ -23,10 +23,47 @@ exports.handler = function(event, context) {
 
     } else if (request.type === "IntentRequest") {
 
-    } else if (request.type === "SessionEndedRequest") {
+        let options = {};
+
+        if (request.intent.name === "HelloIntent") {
+            
+            let name = request.intents.slots.FirstName.value;
+            // gets the name stored in the slot from the request
+            options.speechText = "Hello " + name + ". ";
+
+            // alter the greeting depending on the time of day
+            options.speechText += getWish(); 
+            options.endSession = true;
+            // closes app after this exchange
+
+            context.succedd(buildResponse(options));
+        } else {
+            // this skill only has one intent - HelloIntent
+            context.fail("Unknown intent") 
+        }
+
+    } else (request.type === "SessionEndedRequest") {
 
     } else {
         context.fail("Unknown intent type")
+    }
+}
+
+function getWish() {
+    var myDate = new Date();
+    var hours = myDate.getHours();
+
+    if (hours < 0) {
+        hours = hours + 24;
+        // corrects for 24 hour clock
+    }
+
+    if (hours < 12) {
+        return "Good Morning. ";
+    } else if (hours < 18) {
+        return "Good afternoon. ";
+    } else {
+        return "Good evening. ";
     }
 }
 
